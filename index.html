@@ -1,0 +1,686 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Maluxury Invoice Generator</title>
+
+    <link rel="stylesheet" href="Style.css">
+</head>
+
+<body>
+
+    <main class="app">
+
+        <!-- =========================
+             HEADER
+        ========================== -->
+        <header class="app-header">
+
+            <div class="brand">
+                <div class="brand-mark">
+                    <img src="assets/logo.png" alt="logo" srcset="" height="40px">
+                </div>
+
+                <div>
+                    <h1>Maluxury Apartments</h1>
+                    <p>Invoice Generator</p>
+                </div>
+            </div>
+
+            <div class="doc-type-toggle" id="docTypeToggle">
+                <button type="button" class="toggle-btn active" data-doctype="invoice">Invoice</button>
+                <button type="button" class="toggle-btn" data-doctype="receipt">Receipt</button>
+            </div>
+
+            <div class="header-actions">
+                <button type="button" class="btn btn-outline" id="historyBtn">
+                    History
+                </button>
+
+                <button type="button" class="btn btn-outline" id="saveDraftBtn">
+                    Save Draft
+                </button>
+
+                <button type="button" class="btn btn-gold" id="generateBtn">
+                    Generate Invoice
+                </button>
+
+                <button type="button" class="btn btn-gold" id="downloadPdfBtn">
+                    Download PDF
+                </button>
+            </div>
+
+        </header>
+
+        <!-- =========================
+             HISTORY PANEL
+        ========================== -->
+        <div class="history-overlay" id="historyOverlay"></div>
+        <aside class="history-panel" id="historyPanel">
+            <div class="history-panel-header">
+                <h3>Saved Invoices &amp; Receipts</h3>
+                <button type="button" class="history-close" id="historyClose">&times;</button>
+            </div>
+            <div class="history-status" id="historyStatus"></div>
+            <div class="history-list" id="historyList"></div>
+        </aside>
+
+
+        <!-- =========================
+             MAIN WORKSPACE
+        ========================== -->
+        <div class="workspace">
+
+            <!-- =========================
+                 EDITOR
+            ========================== -->
+            <section class="editor">
+
+                <!-- Invoice Information -->
+                <div class="card">
+
+                    <div class="card-heading">
+                        <div>
+                            <span class="section-number">01</span>
+                            <h2>Invoice Information</h2>
+                        </div>
+                    </div>
+
+                    <div class="form-grid three-columns">
+
+                        <div class="form-group">
+                            <label for="invoiceNumber">
+                                Invoice Number
+                            </label>
+
+                            <input
+                                type="text"
+                                id="invoiceNumber"
+                                placeholder="INV-0001"
+                                readonly
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="invoiceDate">
+                                Invoice Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="invoiceDate"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dueDate" id="dueDateLabel">
+                                Due Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="dueDate"
+                            >
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Business & Customer -->
+                <div class="two-card-grid">
+
+                    <!-- Business -->
+                    <div class="card">
+
+                        <div class="card-heading">
+                            <div>
+                                <span class="section-number">02</span>
+                                <h2>From</h2>
+                            </div>
+                        </div>
+
+                        <div class="form-stack">
+
+                            <div class="form-group">
+                                <label for="businessName">
+                                    Business Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="businessName"
+                                    placeholder="Maluxury Apartments" readonly
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="businessEmail">
+                                    Email
+                                </label>
+
+                                <input
+                                    type="email"
+                                    id="businessEmail"
+                                    placeholder="maluxuryapartment@gmail.com"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="businessPhone">
+                                    Phone
+                                </label>
+
+                                <input
+                                    type="tel"
+                                    id="businessPhone"
+                                    placeholder="+234 816 129 8750"
+                                    readonly
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="businessAddress">
+                                    Address
+                                </label>
+
+                                <textarea
+                                    id="businessAddress"
+                                    rows="3"
+                                    placeholder="11, Asenuga Street Opebi Ikeja,Lagos, Nigeria." readonly
+                                ></textarea>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Customer -->
+                    <div class="card">
+
+                        <div class="card-heading">
+                            <div>
+                                <span class="section-number">03</span>
+                                <h2>Bill To</h2>
+                            </div>
+                        </div>
+
+                        <div class="form-stack">
+
+                            <div class="form-group">
+                                <label for="customerName">
+                                    Customer Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="customerName"
+                                    placeholder="Customer name"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="customerEmail">
+                                    Email
+                                </label>
+
+                                <input
+                                    type="email"
+                                    id="customerEmail"
+                                    placeholder="customer@email.com"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="customerPhone">
+                                    Phone
+                                </label>
+
+                                <input
+                                    type="tel"
+                                    id="customerPhone"
+                                    placeholder="+234 000 000 0000"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="customerAddress">
+                                    Address
+                                </label>
+
+                                <textarea
+                                    id="customerAddress"
+                                    rows="3"
+                                    placeholder="Customer address"
+                                ></textarea>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Items -->
+                <div class="card">
+
+                    <div class="card-heading item-heading">
+
+                        <div>
+                            <span class="section-number">04</span>
+
+                            <div>
+                                <h2>Invoice Items</h2>
+                                <p>Add the services being billed.</p>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="add-item-btn"
+                            id="addItemBtn"
+                        >
+                            + Add Item
+                        </button>
+
+                    </div>
+
+
+                    <!-- Desktop Table -->
+                    <div class="items-table-wrapper">
+
+                        <table class="items-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Number Of Days</th>
+                                    <th>Unit Price</th>
+                                    <th>Amount</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="itemsContainer">
+
+                                <tr class="item-row">
+
+                                    <td data-label="Description">
+                                        <input
+                                            type="text"
+                                            placeholder="Room name"
+                                        >
+                                    </td>
+
+                                    <td data-label="Days">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value="1"
+                                        >
+                                    </td>
+
+                                    <td data-label="Unit Price">
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            placeholder="0.00"
+                                        >
+                                    </td>
+
+                                    <td
+                                        data-label="Amount"
+                                        class="amount"
+                                    >
+                                        ₦0.00
+                                    </td>
+
+                                    <td>
+                                        <button
+                                            type="button"
+                                            class="delete-btn"
+                                        >
+                                            ×
+                                        </button>
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div class="form-grid three-columns totals-inputs">
+
+                        <div class="form-group">
+                            <label for="discountInput">Discount (₦)</label>
+                            <input type="number" id="discountInput" min="0" value="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="taxInput">Tax (%)</label>
+                            <input type="number" id="taxInput" min="0" value="0">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Notes & Payment -->
+                <div class="two-card-grid">
+
+                    <div class="card">
+
+                        <div class="card-heading">
+                            <div>
+                                <span class="section-number">05</span>
+                                <h2>Notes</h2>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+
+                            <textarea
+                                id="notes"
+                                rows="6"
+                                placeholder="Add a note for your customer..."
+                            ></textarea>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-heading">
+                            <div>
+                                <span class="section-number">06</span>
+                                <h2>Payment Details</h2>
+                            </div>
+                        </div>
+
+                        <div class="form-stack">
+
+                            <div class="form-group">
+                                <label for="bankName">
+                                    Bank Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="bankName"
+                                    placeholder="OPAY"
+                                    
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="accountName">
+                                    Account Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="accountName"
+                                    placeholder=" Maluxury Apartments"
+                                    
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="accountNumber">
+                                    Account Number
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="accountNumber"
+                                    placeholder="6569494092"
+                                   
+                                >
+                            </div>
+
+                            <div class="form-group" id="paymentMethodGroup" style="display:none;">
+                                <label for="paymentMethod">
+                                    Payment Method
+                                </label>
+
+                                <select id="paymentMethod">
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="POS/Card">POS/Card</option>
+                                    
+                                </select>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 INVOICE PREVIEW
+            ========================== -->
+            <aside class="preview-section">
+
+                <div class="preview-label">
+                    <span>LIVE PREVIEW</span>
+                </div>
+
+                <div class="invoice-paper">
+
+                    <!-- Invoice Header -->
+                     <div class="outer">
+                        <div class="invoice-top">
+
+                            <div class="invoice-brand">
+
+                                <div class="invoice-logo">
+                                    <img src="assets/logo.png" alt="logo" height="30px">
+                                </div>
+
+                                <div>
+                                    <h2>Maluxury Apartments</h2>
+                                    <p>Luxury. Simplicity. Excellence.</p>
+                                </div>
+
+                            </div>
+
+                            <div class="invoice-title">
+                                <span id="previewDocLabel">INVOICE</span>
+                                <strong id="previewDocNumber">#INV-0001</strong>
+                                <div class="paid-stamp" id="previewPaidStamp" style="display:none;">PAID</div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <!-- Gold Divider -->
+                    <div class="gold-divider"></div>
+
+                    <div class="main-paper">
+                    <!-- Invoice Meta -->
+                        <div class="invoice-meta">
+
+                            <div>
+                                <span id="previewIssuedLabel">ISSUED</span>
+                                <strong id="previewIssuedDate">21 Aug 2026</strong>
+                            </div>
+
+                            <div id="previewDueBlock">
+                                <span id="previewDueLabel">DUE DATE</span>
+                                <strong id="previewDueDate">28 Aug 2026</strong>
+                            </div>
+
+                        </div>
+
+
+                        <!-- Parties -->
+                        <div class="invoice-parties">
+
+                            <div>
+                                <span class="invoice-label">
+                                    FROM
+                                </span>
+
+                                <h3 id="previewBusinessName">Maluxury</h3>
+
+                                <p id="previewBusinessDetails">
+                                    maluxuryapartment@gmail.com<br>
+                                    +234 816 129 8750<br>
+                                    11, Asenuga Street Opebi Ikeja,<br> Lagos, Nigeria.
+                                </p>
+                            </div>
+
+
+                            <div>
+                                <span class="invoice-label">
+                                    BILL TO
+                                </span>
+
+                                <h3 id="previewCustomerName">Customer Name</h3>
+
+                                <p id="previewCustomerDetails">
+                                    customer@email.com<br>
+                                    +234 000 000 0000<br>
+                                    Customer Address
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <!-- Items -->
+                        <div class="invoice-items">
+
+                            <table>
+
+                                <thead>
+                                    <tr>
+                                        <th>DESCRIPTION</th>
+                                        <th>Days</th>
+                                        <th>PRICE</th>
+                                        <th>TOTAL</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="previewItemsBody">
+
+                                    <tr>
+                                        <td>Premium Service</td>
+                                        <td>1</td>
+                                        <td>₦100,000</td>
+                                        <td>₦100,000</td>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+
+                        <!-- Summary -->
+                        <div class="invoice-summary">
+
+                            <div class="summary-row">
+                                <span>Subtotal</span>
+                                <strong id="previewSubtotal">₦150,000</strong>
+                            </div>
+
+                            <div class="summary-row">
+                                <span>Discount</span>
+                                <strong id="previewDiscount">₦0</strong>
+                            </div>
+
+                            <div class="summary-row">
+                                <span>Tax</span>
+                                <strong id="previewTax">₦0</strong>
+                            </div>
+
+                            <div class="summary-total">
+                                <span>TOTAL</span>
+                                <strong id="previewTotal">₦150,000</strong>
+                            </div>
+
+                        </div>
+
+
+                        <!-- Notes -->
+                        <div class="invoice-payment" id="previewNotesBlock" style="display:none;">
+                            <span class="invoice-label">NOTES</span>
+                            <p id="previewNotes"></p>
+                        </div>
+
+
+                        <!-- Payment -->
+                        <div class="invoice-payment">
+                            <div class="details">
+                                <span class="invoice-label" id="previewPaymentLabel">
+                                PAYMENT DETAILS
+                            </span>
+
+                            <p id="previewPaymentDetails">
+                               Bank Name: <b>OPAY</b><br>
+                               Account Name: <b>Maluxury Apartments</b><br>
+                                Account Number: <b>6569494092</b>
+                            </p>
+                            </div>
+                            
+                            <div class="footer-mark">
+                            <img src="assets/sign.png" alt="signature" srcset="" height="30px">
+                            <h4 style="color: black;">Management</h4>
+                            </div>
+
+                        </div>
+                        
+                    </div>
+
+
+                    <!-- Footer -->
+                    <div class="invoice-footer">
+
+                        <div>
+                            <strong>Thank you for choosing Maluxury.</strong>
+
+                            <p>
+                                We appreciate your business.
+                            </p>
+                        </div>
+
+                        
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </main>
+     <script src="script.js"></script>
+    <!-- PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Supabase client (database) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+   
+</body>
+</html>
+

@@ -1,135 +1,112 @@
-# Maluxury Invoice & Receipt Generator
+Maluxury Invoice Generator
 
-A single-page invoice/receipt generator with a live preview, PDF export, and
-cloud-saved history — no backend server to run, no build step.
+A modern and user-friendly invoice generator built with HTML, CSS, and JavaScript. Maluxury makes it easy to create professional invoices, generate invoice PDFs, and send invoices to customers electronically.
 
-**Stack:** plain HTML/CSS/JS + [Supabase](https://supabase.com) (free Postgres
-database) for storage + [html2pdf.js](https://github.com/eKoopmans/html2pdf.js)
-for PDF export. Hosted as a static site (Netlify free tier).
-
-Everything already works locally without any setup — line items, live totals,
-Invoice/Receipt toggle, PDF download, and a "Save Draft" button. The only
-thing you need to configure is the database, so history syncs across devices
-instead of staying in one browser.
-
----
-
-## 1. Run it locally right now
-
-No install needed.
-
-```
+Features
+Professional invoice generation
+Customer information management
+Product and service details
+Automatic invoice calculations
+PDF invoice generation
+Email invoice delivery with EmailJS
+Responsive design
+Clean and modern user interface
+Supabase integration for online data storage
+Technologies Used
+HTML5 for the page structure
+CSS3 for styling and responsive design
+JavaScript for functionality and invoice calculations
+html2pdf.js for PDF generation
+EmailJS for sending invoices via email
+Supabase for database functionality
+Git & GitHub for version control
+Project Structure
+maluxury-invoice/
+│
+├── index.html
+├── style.css
+├── script.js
+│
+├── images/
+│   └── ...
+│
+└── README.md
+Getting Started
+1. Clone the repository
+git clone https://github.com/YOUR-USERNAME/maluxury-invoice.git
+2. Open the project
 cd maluxury-invoice
-python3 -m http.server 8080
-```
 
-Open `http://localhost:8080`. Everything works except cloud sync (it'll save
-to your browser's local storage instead until you connect Supabase below).
+Open the project in VS Code.
 
----
+3. Run the project
 
-## 2. Connect a free database (Supabase)
+Because this is a basic HTML/CSS/JavaScript project, you can run it using Live Server in VS Code.
 
-1. Go to [supabase.com](https://supabase.com) → sign up (free, no card
-   required) → **New project**. Pick any name/region and a database
-   password (you won't need the password again — the app doesn't use it).
-2. Once the project finishes provisioning, open **SQL Editor** → **New
-   query**, paste the contents of `supabase_schema.sql` (included in this
-   folder), and click **Run**. This creates the `documents` table.
-3. Go to **Project Settings → API**. Copy:
-   - **Project URL**
-   - **anon public** key
-4. Open `script.js` in this folder and replace the top two lines:
-   ```js
-   const SUPABASE_URL = "YOUR_SUPABASE_URL";
-   const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-   ```
-   with your real values.
-5. Reload the page. Generate an invoice, click **History** — you should see
-   it listed, and "Loading… → N saved (cloud database)" in the status line.
+Right-click index.html and select:
 
-**Note on security:** the SQL script sets up open read/write access using
-your public "anon" key, which is meant for a small internal tool (e.g. your
-team generating invoices), not a public multi-tenant product. See
-"Extend it further" below if you need per-user accounts.
+Open with Live Server
 
----
+EmailJS Configuration
 
-## 3. Deploy it for free (Netlify)
+Maluxury uses EmailJS to send invoices to customers.
 
-1. Go to [app.netlify.com](https://app.netlify.com) → sign up free.
-2. On the dashboard, find **"Add new site" → "Deploy manually"** (drag-and-drop).
-3. Drag the whole `maluxury-invoice` folder (with your edited `script.js`,
-   containing your real Supabase keys) onto the upload area.
-4. Netlify gives you a live URL immediately (e.g.
-   `https://maluxury-invoices.netlify.app`). That's it — no build command, no
-   server.
-5. Optional: in **Site settings → Domain management**, set a custom
-   subdomain, or attach your own domain (Maluxury could use
-   `invoices.maluxury.com` with a free Netlify SSL cert).
+Create an EmailJS account and configure:
 
-Every teammate you send that URL to can now generate invoices/receipts and
-see the same shared history, since it all reads/writes the same Supabase
-table.
+Email Service
+Email Template
+Public Key
 
-*(Alternative to Netlify: GitHub Pages, Vercel, or Cloudflare Pages all work
-the same way — this is a static site, so any static host is fine.)*
+Then add your EmailJS credentials to the JavaScript configuration.
 
----
+emailjs.init({
+    publicKey: "YOUR_PUBLIC_KEY"
+});
+Supabase Configuration
 
-## 4. How to use it
+If Supabase is enabled, add your project URL and Publishable key to the application.
 
-- Toggle **Invoice / Receipt** at the top — labels, the due-date field, and
-  the payment section all adapt (receipts show a "PAID" stamp and a payment
-  method instead of a due date).
-- Fill in the customer and item details — the preview on the right updates
-  as you type.
-- **Add Item** / the **×** button manage line items; Discount (₦) and Tax
-  (%) feed into the totals automatically.
-- **Generate Invoice/Receipt** assigns a document number, timestamps it, and
-  saves a record (cloud if configured, local otherwise).
-- **Download PDF** exports the live preview exactly as shown.
-- **Save Draft** stores your in-progress form locally so you don't lose it
-  on refresh (separate from the saved history).
-- **History** opens a side panel of everything you've generated — **Load**
-  brings it back into the editor, **PDF** re-downloads it, **Delete**
-  removes it permanently.
+const supabaseUrl = "YOUR_SUPABASE_URL";
+const supabaseKey = "YOUR_SUPABASE_PUBLISHABLE_KEY";
 
----
+Never expose your Supabase service_role or secret key in frontend JavaScript.
 
-## 5. What I'd extend first
+Git Workflow
 
-Roughly in priority order:
+After making changes:
 
-1. **Per-user accounts (Supabase Auth).** Right now the `documents` table is
-   open to anyone with the anon key. Add Supabase Auth (email/password or
-   magic link), add a `user_id` column, and change the RLS policies to
-   `using (auth.uid() = user_id)`. This is the main thing standing between
-   "internal tool" and "safe to hand to individual customers directly."
-2. **Sequential, gapless invoice numbers.** Current numbers are
-   date+random (`INV-20260824-1320`) to avoid collisions without a backend.
-   For accounting purposes you may want a real incrementing sequence — that
-   needs a Postgres sequence or a Supabase Edge Function to assign numbers
-   atomically.
-3. **Email delivery.** Add a "Send to customer" button that emails the PDF
-   directly (Supabase Edge Function + Resend/Postmark's free tier).
-4. **Multi-currency support.** Right now amounts are hardcoded to ₦ (NGN).
-   A currency selector that reformats `formatCurrency()` would make this
-   reusable beyond Maluxury.
-5. **Payment status tracking for invoices** (unpaid/partial/paid), so an
-   invoice can later be "converted" into a receipt instead of creating one
-   from scratch.
-6. **Search/filter in the History panel** (by customer, date range, or
-   doc type) once the list grows past a couple dozen records.
+git add .
+git commit -m "Describe your changes"
+git push
+Deployment
 
----
+The project can be deployed as a static website using platforms such as Vercel or Netlify.
 
-## File overview
+For example, with Vercel:
 
-```
-index.html            Page structure (editor form + live preview)
-Style.css              All styling (gold/black theme, responsive)
-script.js               All app logic — read the numbered sections at the top
-supabase_schema.sql     Database table + security policies
-logo.png / sign.png     Your existing brand assets
-```
+Push the project to GitHub.
+Connect your GitHub account to Vercel.
+Import the maluxury-invoice repository.
+Deploy the project.
+
+Every future push to the GitHub repository can automatically trigger a new deployment.
+
+Future Improvements
+User authentication
+Invoice history
+Customer database
+Product management
+Invoice search and filtering
+Custom invoice templates
+Online invoice sharing
+Payment integration
+Business dashboard
+
+Author
+Romeo
+
+Built with  HTML, CSS, and JavaScript.
+
+License
+
+This project is currently for personal/business use.

@@ -20,19 +20,21 @@
    as-is is fine: the app still works fully using
    the browser's local storage instead of the cloud.
 ========================================= */
-const SUPABASE_URL = "Maluxury-Invoice Generator";
-const SUPABASE_ANON_KEY = "iyvtxfqhpvyzyoxtfrsp";
+const SUPABASE_URL = "https://iyvtxfqhpvyzyoxtfrsp.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_fFGLXiC_uf-9mGOty3blTg_XQWCprxX";
 
 let supabase = null;
 if (
     window.supabase &&
     SUPABASE_URL &&
-    SUPABASE_URL.startsWith("http") &&
+    SUPABASE_URL.startsWith("https") &&
     SUPABASE_ANON_KEY &&
-    SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY"
+    SUPABASE_ANON_KEY !== "sb_publishable_fFGLXiC_uf-9mGOty3blTg_XQWCprxX"
 ) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
+
+
 
 /* =========================================
    2. STATE
@@ -358,6 +360,77 @@ function downloadPDF() {
 }
 
 /* =========================================
+   8b. EMAIL TO CLIENT
+   Sends the invoice/receipt details straight to
+   the customer's inbox via EmailJS. The free
+   EmailJS tier can't attach the actual PDF file,
+   so the email body includes the full itemized
+   breakdown instead — the customer still sees
+   everything, they just don't get a file attachment.
+========================================= */
+function buildItemsPlainText(items) {
+    return items
+        .map((i) => `- ${i.description || "Item"} (x${i.days}): ${formatCurrency(i.amount)}`)
+        .join("\n");
+}
+
+async function emailToClient() {
+    const emailBtn = $("emailBtn");
+    const toEmail = val("customerEmail");
+
+    if (!toEmail) {
+        alert("Add the customer's email address in the 'Bill To' section first.");
+        return;
+    }
+
+    if (!emailReady) {
+        alert("Email isn't set up yet. See the README's 'Email invoices to clients' section to connect EmailJS (takes about 5 minutes, free).");
+        return;
+    }
+
+    const { items, totals } = updatePreview();
+    if (items.length === 0) {
+        alert("Add at least one item before emailing.");
+        return;
+    }
+    if (!val("invoiceNumber")) {
+        handleGenerate();
+    }
+
+    const isReceipt = currentDocType === "receipt";
+    const params = {
+        to_email: toEmail,
+        to_name: val("customerName") || "Customer",
+        from_name: val("businessName") || BUSINESS.name,
+        doc_type: isReceipt ? "Receipt" : "Invoice",
+        doc_number: val("invoiceNumber"),
+        issue_date: formatDatePretty(val("invoiceDate")),
+        due_date: isReceipt ? (val("paymentMethod") || "—") : formatDatePretty(val("dueDate")),
+        items_list: buildItemsPlainText(items),
+        subtotal: formatCurrency(totals.subtotal),
+        discount: formatCurrency(totals.discount),
+        tax: formatCurrency(totals.tax),
+        total: formatCurrency(totals.total),
+        notes: val("notes") || "—",
+        bank_name: val("bankName") || "—",
+        account_name: val("accountName") || "—",
+        account_number: val("accountNumber") || "—"
+    };
+
+    flashButton(emailBtn, "Sending…", "Email to Client");
+
+    try {
+        await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+        emailBtn.textContent = "Sent!";
+        setTimeout(() => (emailBtn.textContent = "Email to Client"), 1800);
+    } catch (err) {
+        console.error(err);
+        emailBtn.textContent = "Email to Client";
+        alert("Couldn't send the email. Check your EmailJS Service/Template IDs in script.js and your connection.");
+    }
+}
+
+/* =========================================
    9. HISTORY PANEL
 ========================================= */
 function setHistoryStatus(msg) {
@@ -535,6 +608,7 @@ function bindHeaderEvents() {
 
     $("generateBtn").addEventListener("click", handleGenerate);
     $("downloadPdfBtn").addEventListener("click", downloadPDF);
+    $("emailBtn").addEventListener("click", emailToClient);
 
     $("saveDraftBtn").addEventListener("click", () => {
         const { items, totals } = updatePreview();

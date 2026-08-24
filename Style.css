@@ -73,7 +73,7 @@ body {
 
     border-bottom: 1px solid var(--dark-border);
 
-    position: sticky;
+    position: relative;
     top: 0;
     z-index: 100;
 }

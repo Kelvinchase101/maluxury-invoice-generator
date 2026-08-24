@@ -24,14 +24,17 @@ const SUPABASE_URL = "https://iyvtxfqhpvyzyoxtfrsp.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_fFGLXiC_uf-9mGOty3blTg_XQWCprxX";
 
 let supabase = null;
+
 if (
     window.supabase &&
     SUPABASE_URL &&
     SUPABASE_URL.startsWith("https") &&
-    SUPABASE_ANON_KEY &&
-    SUPABASE_ANON_KEY !== "sb_publishable_fFGLXiC_uf-9mGOty3blTg_XQWCprxX"
+    SUPABASE_ANON_KEY
 ) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabase = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+    );
 }
 
 

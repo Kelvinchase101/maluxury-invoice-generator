@@ -255,7 +255,7 @@ function updatePreview() {
             `${escapeHtml(val("paymentMethod") || "—")}<br>${escapeHtml(val("bankName"))}<br>${escapeHtml(val("accountNumber"))}`;
     } else {
         $("previewPaymentDetails").innerHTML =
-            `${escapeHtml(val("bankName") || "Bank Name")}<br>${escapeHtml(val("accountName") || BUSINESS.name)}<br>${escapeHtml(val("accountNumber") || "6569494092")}`;
+            `${escapeHtml(val("bankName") || "Bank Name")}<br>${escapeHtml(val("accountName") || BUSINESS.name)}<br>${escapeHtml(val("accountNumber") || "0000000000")}`;
     }
 
     return { items, totals };
@@ -562,9 +562,9 @@ function loadRecordIntoForm(record) {
     $("discountInput").value = record.discount || 0;
     $("taxInput").value = record.tax_rate || 0;
     $("notes").value = record.notes || "";
-    $("bankName").value = record.bank_name || "";
-    $("accountName").value = record.account_name || "";
-    $("accountNumber").value = record.account_number || "";
+    if (record.bank_name) $("bankName").value = record.bank_name;
+    if (record.account_name) $("accountName").value = record.account_name;
+    if (record.account_number) $("accountNumber").value = record.account_number;
     if ($("paymentMethod")) $("paymentMethod").value = record.payment_method || "Bank Transfer";
 
     updatePreview();

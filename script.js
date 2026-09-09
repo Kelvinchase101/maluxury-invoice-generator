@@ -74,9 +74,9 @@ const BUSINESS = {
 // are locked (readonly) so they can never be accidentally changed
 // while filling out an invoice or receipt.
 const BANK_DETAILS = {
-    bankName: "OPAY",
-    accountName: "MA LUXURY APARTMENTS",
-    accountNumber: "6569494092"
+    bankName: "",
+    accountName: "",
+    accountNumber: ""
 };
 
 let currentDocType = "invoice"; // "invoice" | "receipt"
@@ -405,11 +405,55 @@ function downloadPDF() {
         return;
     }
 
-    // Size the PDF page to the actual rendered content instead of a fixed
-    // A4 height, so everything (items, notes, check-in/out, description,
-    // etc.) always fits on a single page, however long the content gets.
+    // Temporarily neutralize anything that clips content for on-screen
+    // scrolling — ancestor panels with a fixed height/overflow, AND
+    // scrollable elements inside the invoice itself (e.g. the items table
+    // wrapper switches to overflow-x:auto with a min-width table on
+    // narrow screens). Left in place, either kind of clipping crops
+    // content out of the PDF capture. Restored right after.
+    const overridden = [];
+    const clearClipping = (el) => {
+        const cs = getComputedStyle(el);
+        if (cs.overflowX !== "visible" || cs.overflowY !== "visible" || (cs.maxHeight && cs.maxHeight !== "none")) {
+            overridden.push({
+                el,
+                overflow: el.style.overflow,
+                overflowX: el.style.overflowX,
+                overflowY: el.style.overflowY,
+                maxHeight: el.style.maxHeight,
+                height: el.style.height
+            });
+            el.style.overflow = "visible";
+            el.style.overflowX = "visible";
+            el.style.overflowY = "visible";
+            el.style.maxHeight = "none";
+        }
+    };
+
+    let ancestor = node.parentElement;
+    while (ancestor && ancestor !== document.body) {
+        clearClipping(ancestor);
+        ancestor = ancestor.parentElement;
+    }
+    clearClipping(node);
+    node.querySelectorAll("*").forEach(clearClipping);
+
+    const restore = () => {
+        overridden.forEach(({ el, overflow, overflowX, overflowY, maxHeight, height }) => {
+            el.style.overflow = overflow;
+            el.style.overflowX = overflowX;
+            el.style.overflowY = overflowY;
+            el.style.maxHeight = maxHeight;
+            el.style.height = height;
+        });
+    };
+
+    // Size the PDF page to the actual rendered content (measured AFTER
+    // clearing clipping above, so it reflects everything, including any
+    // table columns that would otherwise have been scroll-cropped) instead
+    // of a fixed A4 size, so everything always fits on a single page.
     const pxToMm = (px) => (px * 25.4) / 96;
-    const widthMm = pxToMm(node.offsetWidth);
+    const widthMm = pxToMm(Math.max(node.offsetWidth, node.scrollWidth));
     const heightMm = pxToMm(node.scrollHeight);
 
     html2pdf()
@@ -428,7 +472,13 @@ function downloadPDF() {
             pagebreak: { mode: ["avoid-all", "css", "legacy"] }
         })
         .from(node)
-        .save();
+        .save()
+        .then(restore)
+        .catch((err) => {
+            restore();
+            console.error("PDF generation failed:", err);
+            alert("Something went wrong generating the PDF. Please try again.");
+        });
 }
 
 /* =========================================

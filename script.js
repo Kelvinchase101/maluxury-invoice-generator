@@ -37,6 +37,27 @@ if (
     );
 }
 
+/* -----------------------------------------
+   EmailJS config (for the "Email to Client" button)
+   Get these from your EmailJS dashboard:
+   Service ID  -> Email Services
+   Template ID -> Email Templates
+   Public Key  -> Account > General
+   Leaving these blank is fine: the Email button
+   will just show a setup reminder instead of sending.
+------------------------------------------ */
+const EMAILJS_PUBLIC_KEY = "";
+const EMAILJS_SERVICE_ID = "";
+const EMAILJS_TEMPLATE_ID = "";
+
+const emailReady = Boolean(
+    window.emailjs && EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && EMAILJS_PUBLIC_KEY
+);
+
+if (emailReady) {
+    window.emailjs.init(EMAILJS_PUBLIC_KEY);
+}
+
 
 
 /* =========================================
@@ -47,6 +68,15 @@ const BUSINESS = {
     email: "maluxuryapartment@gmail.com",
     phone: "+234 816 129 8750",
     address: "11, Asenuga Street Opebi Ikeja, Lagos, Nigeria."
+};
+
+// Fixed bank/account details. Set these once here — the form fields
+// are locked (readonly) so they can never be accidentally changed
+// while filling out an invoice or receipt.
+const BANK_DETAILS = {
+    bankName: "OPAY",
+    accountName: "MA LUXURY APARTMENTS",
+    accountNumber: "6569494092"
 };
 
 let currentDocType = "invoice"; // "invoice" | "receipt"
@@ -70,6 +100,15 @@ function nl2br(str) {
 function formatCurrency(n) {
     const num = Number(n) || 0;
     return "₦" + num.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function computeStayNights(checkInISO, checkOutISO) {
+    if (!checkInISO || !checkOutISO) return null;
+    const start = new Date(checkInISO + "T00:00:00");
+    const end = new Date(checkOutISO + "T00:00:00");
+    const diffMs = end - start;
+    if (isNaN(diffMs) || diffMs <= 0) return null;
+    return Math.round(diffMs / (1000 * 60 * 60 * 24));
 }
 
 function formatDatePretty(dateStr) {
@@ -197,6 +236,16 @@ function updatePreview() {
     $("previewCustomerDetails").innerHTML =
         `${escapeHtml(val("customerEmail"))}<br>${escapeHtml(val("customerPhone"))}<br>${nl2br(val("customerAddress"))}`;
 
+    // Stay duration (check-in / check-out)
+    const stayNights = computeStayNights(val("checkInDate"), val("checkOutDate"));
+    if ($("previewCheckIn")) $("previewCheckIn").textContent = val("checkInDate") ? formatDatePretty(val("checkInDate")) : "—";
+    if ($("previewCheckOut")) $("previewCheckOut").textContent = val("checkOutDate") ? formatDatePretty(val("checkOutDate")) : "—";
+    if ($("previewStayDuration")) {
+        $("previewStayDuration").textContent = stayNights
+            ? `${stayNights} night${stayNights === 1 ? "" : "s"}`
+            : "—";
+    }
+
     // Items
     const body = $("previewItemsBody");
     body.innerHTML = "";
@@ -221,7 +270,6 @@ function updatePreview() {
     $("previewDiscount").textContent = formatCurrency(totals.discount);
     $("previewTax").textContent = formatCurrency(totals.tax) + (totals.taxRate ? ` (${totals.taxRate}%)` : "");
     $("previewTotal").textContent = formatCurrency(totals.total);
-    $("previewCaution").textContent = formatCurrency(totals.total);
 
     // Notes
     const notes = val("notes");
@@ -277,6 +325,9 @@ function gatherRecord(items, totals) {
         customer_email: val("customerEmail"),
         customer_phone: val("customerPhone"),
         customer_address: val("customerAddress"),
+        check_in_date: val("checkInDate") || null,
+        check_out_date: val("checkOutDate") || null,
+        stay_nights: computeStayNights(val("checkInDate"), val("checkOutDate")),
         items,
         subtotal: totals.subtotal,
         caution: totals.caution,
@@ -354,13 +405,27 @@ function downloadPDF() {
         return;
     }
 
+    // Size the PDF page to the actual rendered content instead of a fixed
+    // A4 height, so everything (items, notes, check-in/out, description,
+    // etc.) always fits on a single page, however long the content gets.
+    const pxToMm = (px) => (px * 25.4) / 96;
+    const widthMm = pxToMm(node.offsetWidth);
+    const heightMm = pxToMm(node.scrollHeight);
+
     html2pdf()
         .set({
             margin: 0,
             filename,
             image: { type: "jpeg", quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: "#ffffff",
+                windowWidth: node.scrollWidth,
+                windowHeight: node.scrollHeight
+            },
+            jsPDF: { unit: "mm", format: [widthMm, heightMm], orientation: "portrait" },
+            pagebreak: { mode: ["avoid-all", "css", "legacy"] }
         })
         .from(node)
         .save();
@@ -413,6 +478,12 @@ async function emailToClient() {
         doc_number: val("invoiceNumber"),
         issue_date: formatDatePretty(val("invoiceDate")),
         due_date: isReceipt ? (val("paymentMethod") || "—") : formatDatePretty(val("dueDate")),
+        check_in_date: val("checkInDate") ? formatDatePretty(val("checkInDate")) : "—",
+        check_out_date: val("checkOutDate") ? formatDatePretty(val("checkOutDate")) : "—",
+        stay_duration: (() => {
+            const n = computeStayNights(val("checkInDate"), val("checkOutDate"));
+            return n ? `${n} night${n === 1 ? "" : "s"}` : "—";
+        })(),
         items_list: buildItemsPlainText(items),
         subtotal: formatCurrency(totals.subtotal),
         caution: formatCurrency(totals.caution),
@@ -530,6 +601,9 @@ function loadRecordIntoForm(record) {
     $("customerPhone").value = record.customer_phone || "";
     $("customerAddress").value = record.customer_address || "";
 
+    if ($("checkInDate")) $("checkInDate").value = record.check_in_date || "";
+    if ($("checkOutDate")) $("checkOutDate").value = record.check_out_date || "";
+
     const container = $("itemsContainer");
     container.innerHTML = "";
     const items = Array.isArray(record.items) ? record.items : (typeof record.items === "string" ? JSON.parse(record.items) : []);
@@ -542,9 +616,8 @@ function loadRecordIntoForm(record) {
     $("discountInput").value = record.discount || 0;
     $("taxInput").value = record.tax_rate || 0;
     $("notes").value = record.notes || "";
-    $("bankName").value = record.bank_name || "";
-    $("accountName").value = record.account_name || "";
-    $("accountNumber").value = record.account_number || "";
+    // Bank details are fixed (see BANK_DETAILS) and intentionally not
+    // restored from saved records.
     if ($("paymentMethod")) $("paymentMethod").value = record.payment_method || "Bank Transfer";
 
     updatePreview();
@@ -569,7 +642,8 @@ function bindLiveInputs() {
     const ids = [
         "invoiceDate", "dueDate", "businessEmail", "customerName", "customerEmail",
         "customerPhone", "customerAddress", "notes", "bankName", "accountName",
-        "accountNumber", "discountInput", "taxInput", "paymentMethod", "cautionInput"
+        "accountNumber", "discountInput", "taxInput", "paymentMethod", "cautionInput",
+        "checkInDate", "checkOutDate"
     ];
     ids.forEach((id) => {
         const el = $(id);
@@ -653,6 +727,15 @@ function init() {
     $("invoiceDate").value = todayISO();
     $("dueDate").value = addDaysISO(todayISO(), 7);
     $("invoiceNumber").value = generateDocNumber(currentDocType);
+
+    // Bank details: fixed and locked so they can't be changed while
+    // filling out the rest of the form.
+    $("bankName").value = BANK_DETAILS.bankName;
+    $("accountName").value = BANK_DETAILS.accountName;
+    $("accountNumber").value = BANK_DETAILS.accountNumber;
+    $("bankName").readOnly = true;
+    $("accountName").readOnly = true;
+    $("accountNumber").readOnly = true;
 
     // Replace the static placeholder row with a properly-wired one
     const itemsContainer = $("itemsContainer");

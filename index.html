@@ -263,6 +263,28 @@
                                 ></textarea>
                             </div>
 
+                            <div class="form-group">
+                                <label for="checkInDate">
+                                    Check-in Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="checkInDate"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="checkOutDate">
+                                    Check-out Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="checkOutDate"
+                                >
+                            </div>
+
                         </div>
 
                     </div>
@@ -573,6 +595,17 @@
                         </div>
 
 
+                        <!-- Stay Duration -->
+                        <div class="invoice-payment" id="previewStayBlock">
+                            <span class="invoice-label">STAY DURATION</span>
+                            <p>
+                                Check-in: <strong id="previewCheckIn">—</strong><br>
+                                Check-out: <strong id="previewCheckOut">—</strong><br>
+                                Duration: <strong id="previewStayDuration">—</strong>
+                            </p>
+                        </div>
+
+
                         <!-- Items -->
                         <div class="invoice-items">
 
@@ -684,7 +717,7 @@
         </div>
 
     </main>
-     <script src="SCRIPTA.js"></script>
+     <script src="script.js"></script>
     <!-- PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- Supabase client (database) -->

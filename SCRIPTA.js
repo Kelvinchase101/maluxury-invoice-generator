@@ -255,7 +255,7 @@ function updatePreview() {
             `${escapeHtml(val("paymentMethod") || "—")}<br>${escapeHtml(val("bankName"))}<br>${escapeHtml(val("accountNumber"))}`;
     } else {
         $("previewPaymentDetails").innerHTML =
-            `${escapeHtml(val("bankName") || "Bank Name")}<br>${escapeHtml(val("accountName") || BUSINESS.name)}<br>${escapeHtml(val("accountNumber") || "0000000000")}`;
+            `${escapeHtml(val("bankName") || "Bank Name")}<br>${escapeHtml(val("accountName") || BUSINESS.name)}<br>${escapeHtml(val("accountNumber") || "6569494092")}`;
     }
 
     return { items, totals };

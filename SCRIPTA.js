@@ -37,6 +37,27 @@ if (
     );
 }
 
+/* -----------------------------------------
+   EmailJS config (for the "Email to Client" button)
+   Get these from your EmailJS dashboard:
+   Service ID  -> Email Services
+   Template ID -> Email Templates
+   Public Key  -> Account > General
+   Leaving these blank is fine: the Email button
+   will just show a setup reminder instead of sending.
+------------------------------------------ */
+const EMAILJS_PUBLIC_KEY = "";
+const EMAILJS_SERVICE_ID = "";
+const EMAILJS_TEMPLATE_ID = "";
+
+const emailReady = Boolean(
+    window.emailjs && EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && EMAILJS_PUBLIC_KEY
+);
+
+if (emailReady) {
+    window.emailjs.init(EMAILJS_PUBLIC_KEY);
+}
+
 
 
 /* =========================================
@@ -221,7 +242,6 @@ function updatePreview() {
     $("previewDiscount").textContent = formatCurrency(totals.discount);
     $("previewTax").textContent = formatCurrency(totals.tax) + (totals.taxRate ? ` (${totals.taxRate}%)` : "");
     $("previewTotal").textContent = formatCurrency(totals.total);
-    $("previewCaution").textContent = formatCurrency(totals.total);
 
     // Notes
     const notes = val("notes");

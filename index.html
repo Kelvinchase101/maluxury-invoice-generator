@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Maluxury Invoice Generator</title>
+    <title>M.A Luxury Invoice Generator</title>
 
     <link rel="stylesheet" href="Style.css">
 </head>
@@ -25,7 +25,7 @@
                 </div>
 
                 <div>
-                    <h1>Maluxury Apartments</h1>
+                    <h1>M.A Luxury Apartments</h1>
                     <p>Invoice Generator</p>
                 </div>
             </div>
@@ -154,7 +154,7 @@
                                 <input
                                     type="text"
                                     id="businessName"
-                                    placeholder="Maluxury Apartments" readonly
+                                    placeholder="M.A Luxury Apartments" readonly
                                 >
                             </div>
 
@@ -167,6 +167,7 @@
                                     type="email"
                                     id="businessEmail"
                                     placeholder="maluxuryapartment@gmail.com"
+                                    readonly
                                 >
                             </div>
 
@@ -221,6 +222,7 @@
                                     type="text"
                                     id="customerName"
                                     placeholder="Customer name"
+                                    required
                                 >
                             </div>
 
@@ -245,6 +247,7 @@
                                     type="tel"
                                     id="customerPhone"
                                     placeholder="+234 000 000 0000"
+                                    required
                                 >
                             </div>
 
@@ -369,6 +372,10 @@
                             <label for="taxInput">Tax (%)</label>
                             <input type="number" id="taxInput" min="0" value="0">
                         </div>
+                         <div class="form-group">
+                            <label for="CautionFee">Caution Fee (₦)</label>
+                            <input type="number" id="cautionInput" min="0" value="0">
+                        </div>
 
                     </div>
 
@@ -420,6 +427,7 @@
                                     type="text"
                                     id="bankName"
                                     placeholder="OPAY"
+                                    readonly
                                     
                                 >
                             </div>
@@ -432,8 +440,8 @@
                                 <input
                                     type="text"
                                     id="accountName"
-                                    placeholder=" Maluxury Apartments"
-                                    
+                                    placeholder=" MALuxury Apartments"
+                                    readonly
                                 >
                             </div>
 
@@ -446,7 +454,7 @@
                                     type="text"
                                     id="accountNumber"
                                     placeholder="6569494092"
-                                   
+                                    readonly
                                 >
                             </div>
 
@@ -494,8 +502,8 @@
                                 </div>
 
                                 <div>
-                                    <h2>Maluxury Apartments</h2>
-                                    <p>Luxury. Simplicity. Excellence.</p>
+                                    <h2>M.A Luxury Apartments</h2>
+                                    <p>Where Luxury Meets Comfort</p>
                                 </div>
 
                             </div>
@@ -538,7 +546,7 @@
                                     FROM
                                 </span>
 
-                                <h3 id="previewBusinessName">Maluxury</h3>
+                                <h3 id="previewBusinessName">M.A Luxury Apartments</h3>
 
                                 <p id="previewBusinessDetails">
                                     maluxuryapartment@gmail.com<br>
@@ -612,6 +620,10 @@
                                 <span>Tax</span>
                                 <strong id="previewTax">₦0</strong>
                             </div>
+                             <div class="summary-row">
+                                <span>Caution Fee</span>
+                                <strong id="previewCaution">₦0</strong>
+                            </div>
 
                             <div class="summary-total">
                                 <span>TOTAL</span>
@@ -674,7 +686,7 @@
         </div>
 
     </main>
-     <script src="script.js"></script>
+     <script src="SCRIPTA.js"></script>
     <!-- PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- Supabase client (database) -->

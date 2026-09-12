@@ -203,7 +203,9 @@ function computeTotals(items) {
     const taxable = Math.max(subtotal - discount, 0);
     const tax = taxable * (taxRate / 100);
     const total = taxable + tax + caution;
-    return { subtotal, caution, discount, taxRate, tax, total };
+    const deposit = Number(val("depositInput")) || 0;
+    const balance = Math.max(total - deposit, 0);
+    return { subtotal, caution, discount, taxRate, tax, total, deposit, balance };
 }
 
 /* =========================================
@@ -270,6 +272,8 @@ function updatePreview() {
     $("previewDiscount").textContent = formatCurrency(totals.discount);
     $("previewTax").textContent = formatCurrency(totals.tax) + (totals.taxRate ? ` (${totals.taxRate}%)` : "");
     $("previewTotal").textContent = formatCurrency(totals.total);
+    $("previewDeposit").textContent = formatCurrency(totals.deposit);
+    $("previewBalance").textContent = formatCurrency(totals.balance);
 
     // Notes
     const notes = val("notes");
@@ -335,6 +339,8 @@ function gatherRecord(items, totals) {
         tax_rate: totals.taxRate,
         tax: totals.tax,
         total: totals.total,
+        deposit: totals.deposit,
+        balance: totals.balance,
         notes: val("notes"),
         bank_name: val("bankName"),
         account_name: val("accountName"),
@@ -449,11 +455,10 @@ function downloadPDF() {
     };
 
     // Size the PDF page to the actual rendered content (measured AFTER
-    // clearing clipping above, so it reflects everything, including any
-    // table columns that would otherwise have been scroll-cropped) instead
-    // of a fixed A4 size, so everything always fits on a single page.
+    // clearing clipping above) instead of a fixed A4 size, so everything
+    // always fits on a single page.
     const pxToMm = (px) => (px * 25.4) / 96;
-    const widthMm = pxToMm(Math.max(node.offsetWidth, node.scrollWidth));
+    const widthMm = pxToMm(node.offsetWidth);
     const heightMm = pxToMm(node.scrollHeight);
 
     html2pdf()
@@ -465,8 +470,15 @@ function downloadPDF() {
                 scale: 2,
                 useCORS: true,
                 backgroundColor: "#ffffff",
-                windowWidth: node.scrollWidth,
-                windowHeight: node.scrollHeight
+                width: node.offsetWidth,
+                height: node.scrollHeight,
+                // Match the ACTUAL browser viewport here (not the invoice
+                // panel's own narrower width) — forcing a narrow simulated
+                // viewport was crossing a CSS breakpoint and shrinking the
+                // real content inside the capture, which is what left the
+                // blank strip on the right.
+                windowWidth: document.documentElement.clientWidth,
+                windowHeight: document.documentElement.clientHeight
             },
             jsPDF: { unit: "mm", format: [widthMm, heightMm], orientation: "portrait" },
             pagebreak: { mode: ["avoid-all", "css", "legacy"] }
@@ -474,7 +486,7 @@ function downloadPDF() {
         .from(node)
         .save()
         .then(restore)
-        .catch((err) => {
+        .catch(function (err) {
             restore();
             console.error("PDF generation failed:", err);
             alert("Something went wrong generating the PDF. Please try again.");
@@ -540,6 +552,8 @@ async function emailToClient() {
         discount: formatCurrency(totals.discount),
         tax: formatCurrency(totals.tax),
         total: formatCurrency(totals.total),
+        deposit: formatCurrency(totals.deposit),
+        balance: formatCurrency(totals.balance),
         notes: val("notes") || "—",
         bank_name: val("bankName") || "—",
         account_name: val("accountName") || "—",
@@ -665,6 +679,8 @@ function loadRecordIntoForm(record) {
 
     $("discountInput").value = record.discount || 0;
     $("taxInput").value = record.tax_rate || 0;
+    $("cautionInput").value = record.caution || 0;
+    $("depositInput").value = record.deposit || 0;
     $("notes").value = record.notes || "";
     // Bank details are fixed (see BANK_DETAILS) and intentionally not
     // restored from saved records.
@@ -693,7 +709,7 @@ function bindLiveInputs() {
         "invoiceDate", "dueDate", "businessEmail", "customerName", "customerEmail",
         "customerPhone", "customerAddress", "notes", "bankName", "accountName",
         "accountNumber", "discountInput", "taxInput", "paymentMethod", "cautionInput",
-        "checkInDate", "checkOutDate"
+        "depositInput", "checkInDate", "checkOutDate"
     ];
     ids.forEach((id) => {
         const el = $(id);

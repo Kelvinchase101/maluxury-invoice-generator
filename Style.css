@@ -471,7 +471,7 @@ input[readonly] {
     box-sizing: border-box;
     background: #f7f5ef;
 
-    color: #fafafa;
+    color: #f1f0f0;
 
     padding: 0;
 
@@ -768,7 +768,7 @@ input[readonly] {
     padding: 12px 0;
 
     border-top: 1px solid #222;
-
+     color: #0f0f0f;
     border-bottom: 2px solid var(--gold);
 
     display: flex;
@@ -778,8 +778,10 @@ input[readonly] {
     align-items: center;
 }
 
-.summary-total span {
+.invoice-paper .summary-total span {
     font-family: Georgia, serif;
+
+    color: #0f0f0f;
 
     font-size: 11px;
 
